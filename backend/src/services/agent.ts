@@ -2,10 +2,9 @@ import { GoogleGenerativeAI, Tool, SchemaType } from '@google/generative-ai';
 import logger from '../lib/logger';
 import { retrieve, getFunctionByName, getFileChunks, listFileFunctions, RetrievedChunk } from './retriever';
 import { ChatTurn } from './queryRewriter';
-import { generateAnswer } from './llm'; 
+import { generateAnswer } from './llm';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
 
 async function withExponentialBackoff<T>(
   operation: () => Promise<T>,
@@ -20,10 +19,10 @@ async function withExponentialBackoff<T>(
       if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Quota exceeded')) {
         attempt++;
         if (attempt >= maxRetries) throw error;
-        
+
         const delay = baseDelayMs * Math.pow(2, attempt - 1);
         logger.warn(`[429 Rate Limit] Retrying in ${delay}ms`, { attempt, maxRetries });
-        
+
         await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         throw error;
@@ -33,13 +32,12 @@ async function withExponentialBackoff<T>(
   throw new Error("Max retries exceeded");
 }
 
-
 const tools: Tool[] = [
   {
     functionDeclarations: [
       {
         name: 'search_codebase',
-        description: 'Search the codebase using semantic and keyword search. Use this for general questions about how something works.',
+        description: 'Search the codebase using semantic and keyword search. Use this for general questions about how something works, or to discover which files are relevant before reading them directly.',
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
@@ -53,7 +51,7 @@ const tools: Tool[] = [
       },
       {
         name: 'get_function',
-        description: 'Get the complete source code of a specific function by name. Use this when you know the exact function name.',
+        description: 'Get the complete source code of a specific function by name. Only use this AFTER you have confirmed the exact file path via search_codebase or list_functions.',
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
@@ -63,7 +61,7 @@ const tools: Tool[] = [
             },
             fileName: {
               type: SchemaType.STRING,
-              description: 'The file path where the function is located',
+              description: 'The exact file path where the function is located, as confirmed by search_codebase',
             },
           },
           required: ['functionName', 'fileName'],
@@ -71,13 +69,13 @@ const tools: Tool[] = [
       },
       {
         name: 'get_file',
-        description: 'Get the complete contents of a specific file. Use this when you need to see an entire file.',
+        description: 'Get the complete contents of a specific file. Only use this AFTER you have confirmed the exact file path via search_codebase — never guess a file path.',
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
             fileName: {
               type: SchemaType.STRING,
-              description: 'The file path to retrieve',
+              description: 'The exact file path to retrieve, as confirmed by search_codebase',
             },
           },
           required: ['fileName'],
@@ -85,13 +83,13 @@ const tools: Tool[] = [
       },
       {
         name: 'list_functions',
-        description: 'List all functions in a specific file with their line numbers. Use this to explore what a file contains before getting specific functions.',
+        description: 'List all functions in a specific file with their line numbers. Only use this AFTER you have confirmed the exact file path via search_codebase.',
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
             fileName: {
               type: SchemaType.STRING,
-              description: 'The file path to list functions from',
+              description: 'The exact file path to list functions from, as confirmed by search_codebase',
             },
           },
           required: ['fileName'],
@@ -102,16 +100,24 @@ const tools: Tool[] = [
 ];
 
 const model = genAI.getGenerativeModel({
-  model:  'gemini-2.5-flash',
+model: 'gemini-3.1-flash-lite',
   tools,
   systemInstruction: `You are an expert senior developer analyzing a GitHub repository codebase.
 You have 4 tools to search and read code. Use them intelligently based on question complexity.
 
+CRITICAL RULE — FILE PATH DISCOVERY:
+- search_codebase does semantic/keyword search on file CONTENT, not file paths.
+  Do NOT try filters like "file:lib/x.js" in your query — this does not work.
+- After ONE search_codebase call, look at the fileName values in the results' metadata.
+  Use those exact fileName values directly with get_file or list_functions.
+- Do NOT call search_codebase more than twice before trying get_file or list_functions
+  with a file path you've already seen in results.
+
 TOOL USAGE GUIDE:
 - Simple factual question → 1 tool call (search_codebase)
-- Specific function question → get_function directly
-- File overview → list_functions first, then get key functions
-- Complex flow question → multiple tools to build complete picture
+- Specific function question → 1 search_codebase call to find the file, then get_function
+- File overview → 1 search_codebase call, then list_functions, then get key functions
+- Complex flow question → search_codebase once, then 2-3 targeted follow-up calls
 
 RULES:
 - Always explain HOW things work, not just WHERE they are
@@ -120,7 +126,9 @@ RULES:
 - Mention error handling and precautions present
 - If information not found: say so honestly, never guess
 - Always cite which file and function answered each point
-- MAX 5 tool calls per question`,
+- ALWAYS end your response with a clear, complete final answer in plain text —
+  never end on a tool call or mid-reasoning sentence
+- MAX 4 tool calls per question — be efficient, don't repeat similar searches`,
 });
 
 export interface AgentStep {
@@ -164,7 +172,9 @@ async function executeTool(
           args.fileName,
           documentId
         );
-        if (!content) return `Function "${args.functionName}" not found in ${args.fileName}.`;
+        if (!content) {
+          return `Function "${args.functionName}" not found in "${args.fileName}". This file path may be incorrect — try search_codebase again to find the correct path.`;
+        }
         allSources.push({
           id:       `fn-${args.functionName}`,
           content,
@@ -176,8 +186,10 @@ async function executeTool(
 
       case 'get_file': {
         const content = await getFileChunks(args.fileName, documentId);
-        if (!content) return `File "${args.fileName}" not found.`;
-        
+        if (!content) {
+          return `File "${args.fileName}" not found. This file path may be incorrect — try search_codebase again to find the correct path (e.g. check for nested folders).`;
+        }
+
         allSources.push({
           id:       `file-${args.fileName}`,
           content:  content.slice(0, 500),
@@ -197,7 +209,9 @@ async function executeTool(
 
       case 'list_functions': {
         const functions = await listFileFunctions(args.fileName, documentId);
-        if (functions.length === 0) return `No functions found in "${args.fileName}".`;
+        if (functions.length === 0) {
+          return `No functions found in "${args.fileName}". This file path may be incorrect — try search_codebase again to find the correct path.`;
+        }
         return functions
           .map((f) => `- ${f.functionName} (lines ${f.startLine}-${f.endLine})`)
           .join('\n');
@@ -219,7 +233,7 @@ export async function runAgent(
 ): Promise<AgentResult> {
   const allSources: RetrievedChunk[] = [];
   const agentSteps: AgentStep[]      = [];
-  const MAX_ITERATIONS               = 5;
+  const MAX_ITERATIONS               = 8;
 
   logger.info('Agent started', { question, documentId });
 
@@ -233,9 +247,9 @@ export async function runAgent(
 
     const chat = model.startChat({ history: contents.slice(0, -1) });
 
-  
     let result = await withExponentialBackoff(() => chat.sendMessage(question));
     let iterations = 0;
+    let hitMaxIterations = false;
 
     while (iterations < MAX_ITERATIONS) {
       const candidate = result.response.candidates?.[0];
@@ -247,14 +261,14 @@ export async function runAgent(
       if (toolCalls.length === 0) break;
 
       iterations++;
+      if (iterations >= MAX_ITERATIONS) hitMaxIterations = true;
 
       const toolResults: any[] = [];
 
       for (const part of toolCalls) {
-  
         if (!part.functionCall) continue;
-        
-      const { name, args } = part.functionCall as { name: string; args: Record<string, string> };
+
+        const { name, args } = part.functionCall as { name: string; args: Record<string, string> };
         logger.debug('Agent tool call', { tool: name, args });
 
         const toolResult = await executeTool(name, args, documentId, allSources);
@@ -273,16 +287,36 @@ export async function runAgent(
         });
       }
 
-      // --- UPDATED: Wrapped in backoff ---
       result = await withExponentialBackoff(() => chat.sendMessage(toolResults));
     }
 
-    const finalParts = result.response.candidates?.[0]?.content?.parts || [];
-    const finalText  = finalParts
+    let finalParts = result.response.candidates?.[0]?.content?.parts || [];
+    let finalText  = finalParts
       .filter((p: any) => p.text)
       .map((p: any) => p.text)
       .join('\n')
       .trim();
+
+    // If we hit max iterations and the model is still trying to call tools,
+    // force one more turn asking explicitly for a final text answer
+    if (hitMaxIterations && !finalText) {
+      logger.warn('Agent hit max iterations, forcing final answer', { question });
+      try {
+        const forcedResult = await withExponentialBackoff(() =>
+          chat.sendMessage(
+            'Based on everything you have found so far, provide your best final answer now in plain text. Do not call any more tools.'
+          )
+        );
+        const forcedParts = forcedResult.response.candidates?.[0]?.content?.parts || [];
+        finalText = forcedParts
+          .filter((p: any) => p.text)
+          .map((p: any) => p.text)
+          .join('\n')
+          .trim();
+      } catch (forceErr: any) {
+        logger.warn('Forced final answer also failed', { error: forceErr?.message });
+      }
+    }
 
     if (!finalText && allSources.length > 0) {
       logger.warn('Agent produced no text, falling back to direct LLM');

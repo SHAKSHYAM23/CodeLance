@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 // Move the prompt to a formal System Instruction
 const model = genAI.getGenerativeModel({ 
-  model: 'gemini-2.5-flash',
+model: 'gemini-3-flash',
   systemInstruction: `You are analyzing a GitHub repository.
 Based on the provided files from the repository, provide a concise summary covering:
 1. What this project does (2-3 sentences)

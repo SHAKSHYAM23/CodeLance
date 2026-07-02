@@ -9,14 +9,10 @@ const connection = {
   enableReadyCheck: false,
 };
 
-async function check() {
+async function clean() {
   const q = new Queue('embedding-queue', { connection });
-  const counts = await q.getJobCounts();
-  console.log('Job counts:', counts);
-  const waiting = await q.getWaiting();
-  console.log('Waiting jobs:', waiting.map(j => ({ id: j.id, data: j.data })));
-  const delayed = await q.getDelayed();
-  console.log('Delayed jobs:', delayed.map(j => ({ id: j.id, data: j.data })));
+  await q.obliterate({ force: true });
+  console.log('DONE - Queue fully obliterated');
   process.exit(0);
 }
-check();
+clean();

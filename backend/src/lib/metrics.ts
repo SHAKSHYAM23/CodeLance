@@ -1,5 +1,5 @@
 import { Counter, Histogram, Registry } from 'prom-client';
-
+import { Gauge } from 'prom-client';
 export const register = new Registry();
 
 export const chatRequests = new Counter({
@@ -34,4 +34,28 @@ export const embeddingRequests = new Counter({
   help: 'Total Gemini embedding API calls',
   labelNames: ['status'],
   registers: [register]
+});
+
+export const ragasFaithfulness = new Gauge({
+  name: 'codeatlas_ragas_faithfulness',
+  help: 'Average RAGAS faithfulness score',
+  registers: [register],
+});
+
+export const ragasRelevancy = new Gauge({
+  name: 'codeatlas_ragas_answer_relevancy',
+  help: 'Average RAGAS answer relevancy score',
+  registers: [register],
+});
+
+export const ragasContextPrecision = new Gauge({
+  name: 'codeatlas_ragas_context_precision',
+  help: 'Average RAGAS context precision score',
+  registers: [register],
+});
+
+export const ragasOverall = new Gauge({
+  name: 'codeatlas_ragas_overall',
+  help: 'Average RAGAS overall score',
+  registers: [register],
 });

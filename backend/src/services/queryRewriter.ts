@@ -4,7 +4,7 @@ import logger from '../lib/logger';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const model = genAI.getGenerativeModel({
-  model: 'gemini-1.5-flash',
+model: 'gemini-3.1-flash-lite',
   systemInstruction: `You are a search query rewriter for a code search system.
 Your job is to rewrite follow-up questions into standalone search queries.
 
@@ -38,22 +38,19 @@ export async function rewriteQuery(
   question: string,
   history: ChatTurn[]
 ): Promise<string> {
-  // If no history or question is long enough to be self-contained
-  if (history.length === 0 || question.split(' ').length > 8) {
+  if (history.length === 0) {
     return question;
   }
 
-  // Quick check — if question has no pronouns or references, skip rewrite
   const referenceWords = ['it', 'that', 'this', 'they', 'them', 'there',
     'why', 'how about', 'what about', 'and', 'also', 'too', 'instead'];
-  
-  // OPTIMIZATION: Use regex with word boundaries (\b) to prevent substring matches 
-  // e.g., matching "it" inside "initialized" or "repository"
+
   const referencePattern = new RegExp(`\\b(${referenceWords.join('|')})\\b`, 'i');
-  
+
   if (!referencePattern.test(question)) {
     return question;
   }
+
 
   try {
     // Build history context — last 3 turns max

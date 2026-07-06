@@ -68,7 +68,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto text-center">
 
           <h3 className="text-3xl font-bold text-white">
-            CodeAtlas
+            CodeLance
           </h3>
 
           <p className="mt-3 text-[#8b949e]">
@@ -95,7 +95,7 @@ export default function LandingPage() {
             </p>
 
             <p className="mt-3 text-sm text-[#6e7681]">
-              © 2026 CodeAtlas. All rights reserved.
+              © 2026 CodeLance. All rights reserved.
             </p>
           </div>
 

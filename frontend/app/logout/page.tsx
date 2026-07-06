@@ -9,7 +9,7 @@ export default function LogoutPage() {
       try {
         await logout();
       } catch (error) {
-        console.error('[CodeAtlas] Logout error:', error);
+        console.error('[CodeLance] Logout error:', error);
       } finally {
         // Always redirect to home
         if (typeof window !== 'undefined') {

@@ -251,7 +251,7 @@ System health and latency are tracked via a dedicated `/metrics` endpoint exposi
 
 * **`Cache-Driven Latency Reduction (~99%)`:** By implementing an Upstash Redis semantic caching layer with input normalization heuristics, recurring exact-match queries bypass the generative LLM pipeline, dropping response times from an average of **~8–10 seconds down to <60ms**.
 * **Fault Tolerance:** The system successfully mitigates 100% of LLM provider rate limits (HTTP 429) during peak ingestion by offloading heavy embedding tasks to asynchronous **BullMQ** worker threads utilizing exponential backoff strategies.
-* **Tracked Telemetry:** Custom metrics include `codeatlas_rag_duration_seconds`, `codeatlas_cache_hits_total`, and specific RAGAS quality gauges.
+* **Tracked Telemetry:** Custom metrics include `codelance_rag_duration_seconds`, `codelance_cache_hits_total`, and specific RAGAS quality gauges.
 
 <br><br>
 

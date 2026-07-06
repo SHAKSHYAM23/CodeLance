@@ -65,7 +65,7 @@ app.use(errorHandler);
 
 
 app.listen(PORT, () => {
-  logger.info(`CodeAtlas backend running`, {
+  logger.info(`CodeLance backend running`, {
     port:     PORT,
     env:      process.env.NODE_ENV,
     frontend: process.env.FRONTEND_URL,

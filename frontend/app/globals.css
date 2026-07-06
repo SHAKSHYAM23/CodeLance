@@ -264,7 +264,7 @@
 
 @layer utilities {
   /* Atlas Blue */
-  .text-atlas-blue {
+  .text--blue {
     @apply text-[#58a6ff];
   }
   

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AuthProvider } from '@/lib/auth-context';
 
 export const metadata: Metadata = {
-  title: 'CodeAtlas - Dashboard',
+  title: 'CodeLance - Dashboard',
   description: 'AI-powered source code understanding dashboard',
 };
 

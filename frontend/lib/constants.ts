@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// lib/constants.ts  —  CodeAtlas Constants
+// lib/constants.ts  —  CodeLance Constants
 // ─────────────────────────────────────────────────────────────
 
 // ── API Routes (matching actual Express backend) ──────────────

@@ -102,7 +102,7 @@ export default function DashboardPage() {
           {/* Left: brand + active repo */}
           <div className="flex items-center gap-3 min-w-0">
             <span style={{ fontSize: '17px', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em', flexShrink: 0 }}>
-              Code<span style={{ color: '#3b82f6' }}>Atlas</span>
+              Code<span style={{ color: '#3b82f6' }}>Lance</span>
             </span>
             {activeRepo && (
               <>

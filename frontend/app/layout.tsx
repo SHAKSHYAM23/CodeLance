@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'CodeAtlas - GitHub Repository Intelligence',
+  title: 'CodeLance - GitHub Repository Intelligence',
   description: 'AI-powered source code understanding and exploration tool. Ask questions about any GitHub repository and get intelligent answers with source citations.',
   generator: 'v0.app',
   keywords: ['code search', 'repository analysis', 'AI', 'GitHub', 'source code'],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'CodeAtlas - GitHub Repository Intelligence',
+    title: 'CodeLance - GitHub Repository Intelligence',
     description: 'AI-powered source code understanding and exploration tool',
     type: 'website',
   },

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// hooks/use-chat.ts  —  CodeAtlas Chat Hook
+// hooks/use-chat.ts  —  CodeLance Chat Hook
 //
 // HOW THE BACKEND WORKS (important):
 //   POST /api/chat returns the full answer in ONE response.

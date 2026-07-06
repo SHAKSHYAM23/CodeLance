@@ -44,9 +44,9 @@ router.post(
       });
 
       if (!document) throw new AppError('Document not found', 404);
-      // if (document.status !== 'READY') {
-      //   throw new AppError(`Document is not ready. Current status: ${document.status}`, 400);
-      // }
+      if (document.status !== 'READY') {
+        throw new AppError(`Document is not ready. Current status: ${document.status}`, 400);
+      }
 
       const recentChats = await prisma.chat.findMany({
         where:   { documentId, userId },
@@ -109,11 +109,11 @@ router.post(
         return;
       }
 
-      // Step 3 — Run agent
+    
       const result = await runAgent(rewrittenQuery, documentId, history);
       const t3 = Date.now();
 
-      // Pipeline breakdown log
+     
       logger.info('RAG pipeline breakdown', {
         queryRewriteMs: t1 - t0,
         cacheCheckMs:   t2 - t1,
@@ -123,10 +123,10 @@ router.post(
         sourceCount:    result.sources.length,
       });
 
-      // Step 4 — Save to cache
+      
       await setCache(documentId, rewrittenQuery, result);
 
-      // Step 5 — Save to DB
+    
       await prisma.chat.create({
         data: {
           question:   question.trim(),
@@ -139,11 +139,10 @@ router.post(
         },
       });
 
-      // Step 6 — Track metrics
       chatRequests.inc({ status: 'success' });
       timer();
 
-      // Step 7 — Send response immediately
+     
       res.json({
         success:    true,
         answer:     result.answer,
@@ -152,15 +151,15 @@ router.post(
         fromCache:  false,
       });
 
-      // Step 8 — RAGAS evaluation fire and forget (after response sent)
-      evaluateRAG(question, result.answer, result.sources)
-        .then((scores) => {
-          ragasFaithfulness.set(scores.faithfulness);
-          ragasRelevancy.set(scores.answerRelevancy);
-          ragasContextPrecision.set(scores.contextPrecision);
-          ragasOverall.set(scores.overall);
-        })
-        .catch(() => {});
+    
+      // evaluateRAG(question, result.answer, result.sources)
+      //   .then((scores) => {
+      //     ragasFaithfulness.set(scores.faithfulness);
+      //     ragasRelevancy.set(scores.answerRelevancy);
+      //     ragasContextPrecision.set(scores.contextPrecision);
+      //     ragasOverall.set(scores.overall);
+      //   })
+      //   .catch(() => {});
 
     } catch (err: any) {
       chatRequests.inc({ status: 'error' });
@@ -202,6 +201,37 @@ router.get(
       });
 
       res.json({ success: true, chats: chats.reverse() });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.delete(
+  '/history/:documentId',
+  authenticate,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const documentId = req.params.documentId as string;
+      const userId     = req.jwtUser!.userId;
+
+      const document = await prisma.document.findFirst({
+        where:  { id: documentId, userId },
+        select: { id: true },
+      });
+
+      if (!document) throw new AppError('Document not found', 404);
+
+      const { count } = await prisma.chat.deleteMany({
+        where: { documentId, userId },
+      });
+
+      logger.info('Chat history cleared', { documentId, userId, deletedCount: count });
+
+      res.json({
+        success: true,
+        message: `Cleared ${count} chat message(s). Document embeddings remain intact.`,
+      });
     } catch (err) {
       next(err);
     }

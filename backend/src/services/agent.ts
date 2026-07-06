@@ -37,13 +37,13 @@ const tools: Tool[] = [
     functionDeclarations: [
       {
         name: 'search_codebase',
-        description: 'Search the codebase using semantic and keyword search. Use this for general questions about how something works, or to discover which files are relevant before reading them directly.',
+        description: 'Search the codebase using semantic and keyword search. Use this for general questions about how something works, or to discover which files are relevant before reading them directly. Use SPECIFIC, multi-word queries — single generic words like "listen" return noisy, irrelevant results.',
         parameters: {
           type: SchemaType.OBJECT,
           properties: {
             query: {
               type: SchemaType.STRING,
-              description: 'The search query to find relevant code chunks',
+              description: 'A specific, multi-word search query (e.g. "app.listen server creation" not just "listen")',
             },
           },
           required: ['query'],
@@ -100,12 +100,23 @@ const tools: Tool[] = [
 ];
 
 const model = genAI.getGenerativeModel({
-model: 'gemini-3.1-flash-lite',
+  model: 'gemini-2.5-flash',
   tools,
   systemInstruction: `You are an expert senior developer analyzing a GitHub repository codebase.
 You have 4 tools to search and read code. Use them intelligently based on question complexity.
 
-CRITICAL RULE — FILE PATH DISCOVERY:
+CRITICAL RULE — GROUNDING (MOST IMPORTANT):
+- Your answer MUST be based STRICTLY on the code chunks you retrieved via tool calls in THIS conversation.
+- NEVER use your own general/training knowledge about how a framework "typically" works, even if
+  you recognize the library. Only describe what the retrieved code chunks actually show.
+- If the retrieved chunks are insufficient to fully answer, explicitly say so: "Based on the
+  retrieved code, I can confirm X, but I don't have enough retrieved context to explain Y in detail."
+  Do NOT fill that gap with assumed/general knowledge.
+
+CRITICAL RULE — SEARCH QUALITY:
+- Your FIRST search_codebase query must be specific and multi-word (e.g. "app.listen server
+  creation http" not just "listen"). Generic single-word queries return noisy, irrelevant chunks
+  and hurt answer quality.
 - search_codebase does semantic/keyword search on file CONTENT, not file paths.
   Do NOT try filters like "file:lib/x.js" in your query — this does not work.
 - After ONE search_codebase call, look at the fileName values in the results' metadata.
@@ -115,16 +126,16 @@ CRITICAL RULE — FILE PATH DISCOVERY:
 
 TOOL USAGE GUIDE:
 - Simple factual question → 1 tool call (search_codebase)
-- Specific function question → 1 search_codebase call to find the file, then get_function
+- Specific function question → 1 specific search_codebase call to find the file, then get_function
 - File overview → 1 search_codebase call, then list_functions, then get key functions
-- Complex flow question → search_codebase once, then 2-3 targeted follow-up calls
+- Complex flow question → specific search_codebase call, then 2-3 targeted follow-up calls
 
 RULES:
-- Always explain HOW things work, not just WHERE they are
-- Mention specific function names, line numbers, and values
-- Explain design decisions visible in the code
-- Mention error handling and precautions present
-- If information not found: say so honestly, never guess
+- Always explain HOW things work, not just WHERE they are, based on the actual retrieved code
+- Mention specific function names, line numbers, and values FROM THE RETRIEVED CHUNKS
+- Explain design decisions visible in the retrieved code
+- Mention error handling and precautions present in the retrieved code
+- If information not found in retrieved chunks: say so honestly, never guess or use general knowledge
 - Always cite which file and function answered each point
 - ALWAYS end your response with a clear, complete final answer in plain text —
   never end on a tool call or mid-reasoning sentence
@@ -233,7 +244,7 @@ export async function runAgent(
 ): Promise<AgentResult> {
   const allSources: RetrievedChunk[] = [];
   const agentSteps: AgentStep[]      = [];
-  const MAX_ITERATIONS               = 8;
+  const MAX_ITERATIONS               = 5;
 
   logger.info('Agent started', { question, documentId });
 
@@ -247,18 +258,33 @@ export async function runAgent(
 
     const chat = model.startChat({ history: contents.slice(0, -1) });
 
-    let result = await withExponentialBackoff(() => chat.sendMessage(question));
+  let result = await withExponentialBackoff(() => chat.sendMessage(question));
+
+    // DEBUG — log raw response structure when no candidate
+    if (!result.response.candidates || result.response.candidates.length === 0) {
+      logger.error('Empty candidates in Gemini response', {
+        promptFeedback: result.response.promptFeedback,
+        fullResponse: JSON.stringify(result.response).slice(0, 500),
+      });
+    }
+
     let iterations = 0;
     let hitMaxIterations = false;
 
-    while (iterations < MAX_ITERATIONS) {
-      const candidate = result.response.candidates?.[0];
-      if (!candidate) break;
+ while (iterations < MAX_ITERATIONS) {
+  const candidate = result.response.candidates?.[0];
+  if (!candidate) break;
 
-      const parts = candidate.content.parts;
-      const toolCalls = parts.filter((p: any) => p.functionCall);
+  const parts = candidate.content?.parts;
+  if (!parts) {
+    logger.warn('Candidate has no parts, breaking loop', { question });
+    break;
+  }
 
-      if (toolCalls.length === 0) break;
+  const toolCalls = parts.filter((p: any) => p.functionCall);
+
+  if (toolCalls.length === 0) break;
+  
 
       iterations++;
       if (iterations >= MAX_ITERATIONS) hitMaxIterations = true;
@@ -298,13 +324,17 @@ export async function runAgent(
       .trim();
 
     // If we hit max iterations and the model is still trying to call tools,
-    // force one more turn asking explicitly for a final text answer
+    // force one more turn asking explicitly for a GROUNDED final answer only
     if (hitMaxIterations && !finalText) {
       logger.warn('Agent hit max iterations, forcing final answer', { question });
       try {
         const forcedResult = await withExponentialBackoff(() =>
           chat.sendMessage(
-            'Based on everything you have found so far, provide your best final answer now in plain text. Do not call any more tools.'
+            'Based ONLY on the code chunks you have retrieved so far via tool calls, provide your ' +
+            'best final answer now in plain text. Do NOT use any general knowledge about this ' +
+            'framework beyond what you actually retrieved — if the retrieved chunks are insufficient ' +
+            'to answer confidently, say so explicitly rather than guessing or filling gaps with ' +
+            'assumed knowledge. Do not call any more tools.'
           )
         );
         const forcedParts = forcedResult.response.candidates?.[0]?.content?.parts || [];

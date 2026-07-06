@@ -32,6 +32,7 @@ const FUNCTION_PATTERNS: Record<string, RegExp[]> = {
     /^(?:export\s+)?(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>/m, // Improved Arrow Fn
     /^\s+(?:async\s+)?(\w+)\s*\([^)]*\)\s*\{/m,
     /^(?:export\s+)?class\s+(\w+)/m,
+      /^\w+\.(\w+)\s*=\s*function\s*\w*\s*\(/m, 
   ],
   python: [
     /^(?:async\s+)?def\s+(\w+)\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:/m, // Improved with Type Hints

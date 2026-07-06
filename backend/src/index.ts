@@ -11,14 +11,14 @@ import authRouter     from './routes/auth';
 import documentRouter from './routes/document';
 import chatRouter     from './routes/chat';
 
-// Import workers so they start listening on boot
+
 import './workers/ingestion.worker';
 import './workers/embedding.worker';
 
 const app  = express();
 const PORT = parseInt(process.env.PORT || '8000');
 
-// ── Security middleware ──────────────────────────────────────────
+
 app.use(helmet());
 
 app.use(cors({
@@ -28,20 +28,20 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ── Parsing middleware ───────────────────────────────────────────
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ── Passport (no session — stateless JWT via cookie) ────────────
+
 app.use(passport.initialize());
 
-// ── Routes ───────────────────────────────────────────────────────
+
 app.use('/api/auth',     authRouter);
 app.use('/api/document', documentRouter);
 app.use('/api/chat',     chatRouter);
 
-// ── Health check ─────────────────────────────────────────────────
+
 app.get('/health', (_req, res) => {
   res.json({
     status:    'ok',
@@ -60,10 +60,10 @@ app.get('/metrics', async (_req, res) => {
   }
 });
 
-// ── Global error handler (must be last) ─────────────────────────
+
 app.use(errorHandler);
 
-// ── Start server ─────────────────────────────────────────────────
+
 app.listen(PORT, () => {
   logger.info(`CodeAtlas backend running`, {
     port:     PORT,

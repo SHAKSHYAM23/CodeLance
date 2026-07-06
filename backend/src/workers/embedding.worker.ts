@@ -156,7 +156,7 @@ async function processEmbedding(job: Job<EmbeddingJob>): Promise<void> {
 
 export const embeddingWorker = new Worker<EmbeddingJob>(
 
-  'embedding-queuee',
+  'embedding-queue',
 
   processEmbedding,
 

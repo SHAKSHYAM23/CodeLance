@@ -125,10 +125,10 @@ export async function retrieve(
   logger.debug('Retrieval started', { query, documentId });
 
   try {
-    // Step 1 — Embed query
+   
     const queryVector = await embedQuery(query);
 
-    // Step 2 — Run both searches in parallel
+    
     const [vectorResults, keywordResults] = await Promise.all([
       vectorSearch(queryVector, documentId),
       keywordSearch(query, documentId),
@@ -139,13 +139,13 @@ export async function retrieve(
       keywordCount: keywordResults.length,
     });
 
-    // Step 3 — RRF reranking
+    
     const reranked = rerankRRF(vectorResults, keywordResults);
 
-    // Step 4 — Take top K
+  
     const topK = reranked.slice(0, TOP_K);
 
-    // Step 5 — Reassemble multi-part functions
+ 
     const final = await reassembleMultiPart(topK, documentId);
 
     logger.debug('Retrieval complete', { resultCount: final.length });

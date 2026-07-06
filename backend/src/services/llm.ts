@@ -6,7 +6,7 @@ import { ChatTurn } from './queryRewriter';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const model = genAI.getGenerativeModel({
-model: 'gemini-3.1-flash-lite',
+model: 'gemini-2.5-flash',
   systemInstruction: `You are an expert senior developer analyzing a GitHub repository codebase.
 You will be given relevant code chunks retrieved from the repository and a question about the code.
 

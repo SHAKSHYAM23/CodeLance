@@ -4,7 +4,7 @@ import logger from '../lib/logger';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const model = genAI.getGenerativeModel({
-model: 'gemini-3.1-flash-lite',
+model: 'gemini-2.5-flash-lite',
   systemInstruction: `You are a search query rewriter for a code search system.
 Your job is to rewrite follow-up questions into standalone search queries.
 
@@ -53,7 +53,7 @@ export async function rewriteQuery(
 
 
   try {
-    // Build history context — last 3 turns max
+  
     const recentHistory = history.slice(-3);
     const historyText = recentHistory
       .map((turn) => `Q: ${turn.question}\nA: ${turn.answer.slice(0, 200)}`)
@@ -77,7 +77,7 @@ export async function rewriteQuery(
 
     return rewritten;
   } catch (err: any) {
-    // On failure — return original question, never block the pipeline
+   
     logger.warn('Query rewrite failed, using original', { error: err?.message });
     return question;
   }

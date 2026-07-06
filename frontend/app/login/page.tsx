@@ -8,23 +8,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
-
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = encodeURIComponent(
-      'http://localhost:8000/api/auth/google/callback'
-    );
-    const scope = encodeURIComponent('openid email profile');
-
-    const googleAuthUrl =
-      `https://accounts.google.com/o/oauth2/v2/auth` +
-      `?client_id=${clientId}` +
-      `&redirect_uri=${redirectUri}` +
-      `&response_type=code` +
-      `&scope=${scope}` +
-      `&access_type=offline` +
-      `&prompt=select_account`;
-
-    window.location.href = googleAuthUrl;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
   };
 
   return (

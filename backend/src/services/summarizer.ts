@@ -18,7 +18,7 @@ Be specific and technical. Maximum 200 words. Do not use filler introductions.`
 });
 
 async function getRepresentativeContent(documentId: string): Promise<string> {
-  // Priority 1 — README (Accounting for case sensitivity in JSON)
+ 
   const readme = await prisma.chunk.findFirst({
     where: {
       documentId,
@@ -33,7 +33,7 @@ async function getRepresentativeContent(documentId: string): Promise<string> {
 
   if (readme) return readme.content.slice(0, 3000);
 
-  // Priority 2 — package.json
+
   const packageJson = await prisma.chunk.findFirst({
     where: {
       documentId,
@@ -66,7 +66,7 @@ async function getRepresentativeContent(documentId: string): Promise<string> {
 
   if (parts.length > 0) return parts.join('\n\n');
 
-  // Fallback — first 3 overview chunks
+
   const overviews = await prisma.chunk.findMany({
     where: {
       documentId,
@@ -94,7 +94,7 @@ export async function generateSummary(documentId: string): Promise<void> {
       return;
     }
 
-    // Since system instructions are set, we just pass the file content here
+
     const result = await model.generateContent(`Repository files:\n${content}`);
     const summary = result.response.text().trim();
 

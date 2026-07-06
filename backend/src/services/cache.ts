@@ -69,7 +69,7 @@ export async function invalidateDocumentCache(
   try {
     const setKey = `doc_cache_keys:${documentId}`;
     
-    // 1. Fetch all cache keys associated with this document
+  
     const keys = await upstash.smembers(setKey);
     
     if (keys.length > 0) {

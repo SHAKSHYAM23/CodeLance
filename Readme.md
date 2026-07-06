@@ -81,9 +81,44 @@ Continuous deployment is handled through `GitHub Actions`, automatically validat
 * [🚀 Local Setup](#-local-setup)
 
 ---
+<br><br>
 
+---
 
+<br>
 
+## ✨ Demo & Live Preview
+
+<table>
+  <tr>
+    <td width="60%" valign="top">
+      <h3>🚀 Live Application</h3>
+      <p>CodeLance is deployed using a decoupled architecture for optimal performance:</p>
+      <ul>
+        <li>🖥️ <strong>Frontend:</strong> Hosted on <a href="https://code-lance-theta.vercel.app/">Vercel</a> for fast, global delivery.</li>
+        <li>⚙️ <strong>Backend:</strong> Hosted on <strong>Render</strong>. <br><em>(Note: As the backend utilizes Render's free tier, the initial API request may take 30–60 seconds to process while the server wakes up).</em></li>
+      </ul>
+      <br>
+      <a href="https://code-lance-theta.vercel.app/">
+        <img src="https://img.shields.io/badge/Access_Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Try it Live">
+      </a>
+    </td>
+    <td width="40%" valign="top" align="center">
+      <h3>🎥 Video Walkthrough</h3>
+      <a href="https://youtu.be/cjt8jW4rPQ4" target="_blank">
+        <img src="https://img.youtube.com/vi/cjt8jW4rPQ4/maxresdefault.jpg" alt="CodeLance Video Demonstration" width="100%" style="border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+      </a>
+      <br>
+      <sup><em>Click the thumbnail to watch the full demo</em></sup>
+    </td>
+  </tr>
+</table>
+
+<br><br>
+
+---
+
+<br>
 
 # 🏛️ Architecture
 

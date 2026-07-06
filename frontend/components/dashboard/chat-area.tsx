@@ -12,8 +12,8 @@ interface ChatAreaProps {
   isStreaming?: boolean;
   error?: string | null;
   onSendMessage: (message: string) => Promise<void>;
-  repoSummary?: string | null;    // NEW — rendered as the first message in chat
-  repoName?: string;              // NEW — used in the summary card header
+  repoSummary?: string | null;    
+  repoName?: string;              
 }
 
 export function ChatArea({
@@ -85,7 +85,7 @@ export function ChatArea({
         )}
 
         {messages.length === 0 && !isLoading && !repoSummary && (
-          /* TODO: replace with your original empty-state component/markup if it differs */
+         
           <div className="h-full flex flex-col items-center justify-center text-center">
             <div
               className="flex items-center justify-center rounded-2xl mb-5"
@@ -103,9 +103,7 @@ export function ChatArea({
             <p style={{ fontSize: '15px', fontWeight: 600, color: '#c8d8f0' }}>
               Ask anything about this codebase
             </p>
-            <p style={{ fontSize: '13px', color: '#3a5a78', marginTop: '6px', maxWidth: '360px' }}>
-              Try &ldquo;why Postgres over MongoDB?&rdquo; or &ldquo;how does authentication flow across files?&rdquo;
-            </p>
+         
           </div>
         )}
 

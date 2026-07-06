@@ -185,7 +185,7 @@ export function HeroSection() {
             ))}
           </div>
 
-          {/* Trust line */}
+          
           <div style={{ marginTop: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px 14px', borderRadius: '8px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }}>
             <div style={{ marginTop: '2px', width: '14px', height: '14px', borderRadius: '50%', border: '1.5px solid #3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#3b82f6' }} />
@@ -195,7 +195,7 @@ export function HeroSection() {
             </span>
           </div>
 
-          {/* CTA buttons */}
+          
           <div style={{ marginTop: '28px', display: 'flex', gap: '12px', alignItems: 'center' }}>
             <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 30px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, color: '#ffffff', background: '#2563eb', boxShadow: '0 0 28px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.1)', textDecoration: 'none' }}>
               Get Started
@@ -203,7 +203,12 @@ export function HeroSection() {
                 <path d="M2 6.5h9M7.5 2.5l4 4-4 4" />
               </svg>
             </a>
-            <a href="#demo" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 28px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.05)', textDecoration: 'none' }}>
+            <a 
+              href="https://youtu.be/cjt8jW4rPQ4" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 28px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.05)', textDecoration: 'none' }}
+            >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><polygon points="2,1 11,5.5 2,10" /></svg>
               Watch Demo
             </a>

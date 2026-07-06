@@ -203,15 +203,13 @@ export function HeroSection() {
                 <path d="M2 6.5h9M7.5 2.5l4 4-4 4" />
               </svg>
             </a>
-            <a 
-              href="https://youtu.be/cjt8jW4rPQ4" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 28px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.05)', textDecoration: 'none' }}
+           <button 
+              onClick={() => window.open('https://youtu.be/cjt8jW4rPQ4', '_blank', 'noopener,noreferrer')}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 28px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)', background: 'rgba(245,158,11,0.05)', cursor: 'pointer' }}
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><polygon points="2,1 11,5.5 2,10" /></svg>
               Watch Demo
-            </a>
+            </button>
           </div>
 
           {/* Language badges with icons */}

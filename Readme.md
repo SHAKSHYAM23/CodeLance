@@ -95,7 +95,7 @@ Continuous deployment is handled through `GitHub Actions`, automatically validat
       <h3>🚀 Live Application</h3>
       <p>CodeLance is deployed using a decoupled architecture for optimal performance:</p>
       <ul>
-        <li>🖥️ <strong>Frontend:</strong> Hosted on <a href="https://code-lance-theta.vercel.app/">Vercel</a> for fast, global delivery.</li>
+        <li>🖥️ <strong>Frontend:</strong> Hosted on <a href="https://code-lance-theta.vercel.app">Vercel</a> for fast, global delivery.</li>
         <li>⚙️ <strong>Backend:</strong> Hosted on <strong>Render</strong>. <br><em>(Note: As the backend utilizes Render's free tier, the initial API request may take 30–60 seconds to process while the server wakes up).</em></li>
       </ul>
       <br>
@@ -113,6 +113,30 @@ Continuous deployment is handled through `GitHub Actions`, automatically validat
     </td>
   </tr>
 </table>
+
+---
+
+## CI/CD Pipeline
+
+![CI](https://github.com/SHAKSHYAM23/CodeLance/actions/workflows/ci.yml/badge.svg)
+
+This project uses an automated CI/CD pipeline:
+
+- **Continuous Integration** — GitHub Actions runs on every push to `main`:
+  - Installs dependencies
+  - Generates Prisma client
+  - Type-checks the entire codebase (`tsc --noEmit`)
+  - Builds the project and verifies compiled output exists
+  
+- **Continuous Deployment**:
+  - **Backend** auto-deploys to [Render](https://render.com) on every push to `main`
+  - **Frontend** auto-deploys to [Vercel](https://vercel.com) on every push to `main`
+  - Both platforms rebuild and redeploy automatically — no manual deployment steps required
+
+**Live URLs:**
+- Frontend: [code-lance-theta.vercel.app](https://code-lance-theta.vercel.app)
+- Backend health check: [codelance-iyna.onrender.com/health](https://codelance-iyna.onrender.com/health)
+
 
 <br><br>
 
